@@ -11,8 +11,12 @@ import numpy as np
 import random
 import math
 from sklearn.preprocessing import scale
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.linear_model import SGDClassifier
+import sys
+
+sys.path += [os.path.join("/home/vladimir/workspace/NeuralNetworks/multilayer_perceptron")]
+sys.path += [os.path.join("/home/vladimir/workspace/NeuralNetworks")]
+from multilayer_perceptron  import MultilayerPerceptronClassifier
+
 random.seed(666)
 
 data_path = os.path.join("..", "data")
@@ -35,17 +39,16 @@ id = testing["id"]
 
 testing = testing.drop(["id"], axis=1)
 
-testing_log = testing.applymap(fun)
+# testing_log = testing.applymap(fun)
 
-testing_log_scale = scale(testing_log.values.astype(float), axis=0)
+# testing_log_scale = scale(testing_log.values.astype(float), axis=0)
 
-# forest = RandomForestClassifier(n_estimators=1000, n_jobs=3)
-# forest = GradientBoostingClassifier(n_estimators=1000, subsample=0.5)
-forest = SGDClassifier(n_jobs=3, loss="log")
+clf = MultilayerPerceptronClassifier(hidden_layer_sizes=(200, 100), max_iter = 200, alpha = 0.02)
 
 print "Training"
-fit = forest.fit(train_log_scale, target)
-# fit = forest.fit(train, target)
+# fit = forest.fit(train_log_scale, target)
+fit = clf.fit(train, target)
+
 def predicting(testing, n):
     '''
     There are problems with memory that I have when I am trying to predict all testing set
@@ -63,8 +66,8 @@ def predicting(testing, n):
 
 
 print "Predicting"
-# prediction = fit.predict_proba(testing.values)
-prediction = predicting(testing_log_scale, 10)
+prediction = fit.predict_proba(testing.values)
+# prediction = predicting(testing_log_scale, 10)
 
 
 temp = pd.DataFrame(prediction)
@@ -81,4 +84,4 @@ temp = temp.rename(columns = {0: "Class_1",
 
 temp["id"] = id
 
-temp.to_csv(os.path.join("..", "data", "sgdc_log_scale.csv"), index=False)
+temp.to_csv(os.path.join("..", "data", "NN_200_100.csv"), index=False)
