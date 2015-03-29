@@ -13,6 +13,7 @@ import math
 from sklearn.preprocessing import scale
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import SGDClassifier
+from sklearn import cross_validation
 random.seed(666)
 
 data_path = os.path.join("..", "data")
@@ -20,31 +21,36 @@ data_path = os.path.join("..", "data")
 training = pd.read_csv(os.path.join(data_path, "train.csv"))
 testing = pd.read_csv(os.path.join(data_path, "test.csv"))
 
-target = training["target"].values
+target = training["target"]
 
 train = training.drop(["target", "id"], axis=1)
 
-def fun(x):
-    return math.log(x + 1)
+# def fun(x):
+#     return math.log(x + 1)
 
-train_log = train.applymap(fun)
-train_log_scale = scale(train_log.values.astype(float), axis=0)
-
+# train_log = train.applymap(fun)
+# train_log_scale = scale(train_log.values.astype(float), axis=0)
 
 id = testing["id"]
 
-testing = testing.drop(["id"], axis=1)
+test = testing.drop(["id"], axis=1)
 
-testing_log = testing.applymap(fun)
+# testing_log = testing.applymap(fun)
 
-testing_log_scale = scale(testing_log.values.astype(float), axis=0)
+# testing_log_scale = scale(testing_log.values.astype(float), axis=0)
 
-# forest = RandomForestClassifier(n_estimators=1000, n_jobs=3)
+clf = RandomForestClassifier(n_estimators=1000, n_jobs=3)
 # forest = GradientBoostingClassifier(n_estimators=1000, subsample=0.5)
-forest = SGDClassifier(n_jobs=3, loss="log")
+# forest = SGDClassifier(n_jobs=3, loss="log")
+
+print "Estimating"
+clf = RandomForestClassifier(n_estimators=10, n_jobs=3)
+scores = cross_validation.cross_val_score(clf, train.values, target.values, cv=5, scoring="log_loss")
+print "Estimated log_loss = ", -np.mean(scores)
+
 
 print "Training"
-fit = forest.fit(train_log_scale, target)
+fit = clf.fit(train.values, target.values)
 # fit = forest.fit(train, target)
 def predicting(testing, n):
     '''
@@ -63,7 +69,7 @@ def predicting(testing, n):
 
 
 print "Predicting"
-prediction = fit.predict_proba(testing.values)
+prediction = fit.predict_proba(test.values)
 # prediction = predicting(testing_log_scale, 10)
 
 
@@ -81,4 +87,5 @@ temp = temp.rename(columns = {0: "Class_1",
 
 temp["id"] = id
 
-temp.to_csv(os.path.join("..", "data", "sgdc_log_scale.csv"), index=False)
+# temp.to_csv(os.path.join("..", "data", "sgdc_log_scale.csv"), index=False)
+temp.to_csv(os.path.join("..", "data", "rf_10_squared.csv"), index=False)
