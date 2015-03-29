@@ -42,19 +42,19 @@ def evaluate_logloss(model, train, valid):
     return {'train_logloss': multiclass_logloss(model, train),
             'valid_logloss': multiclass_logloss(model, valid)}
 
-# params = {'target': 'target',
-#           'max_iterations': 250,
-#           'max_depth': 10,
-#           'min_child_weight': 4,
-#           'row_subsample': 0.9,
-#           'min_loss_reduction': 1,
-#           'column_subsample': 0.8,
-#           'validation_set': None}
-
 params = {'target': 'target',
-          'validation_set': None,
-          'max_iterations': 250,
-          'min_loss_redution': 1}
+          'max_iterations': 300,
+          'max_depth': 8,
+          'min_child_weight': 4,
+          'row_subsample': 0.9,
+          'min_loss_reduction': 2,
+          'column_subsample': 0.9,
+          'validation_set': None}
+
+# params = {'target': 'target',
+#           'validation_set': None,
+#           'max_iterations': 250,
+#           'min_loss_redution': 1}
 
 
 train = shuffle(train)
@@ -65,6 +65,7 @@ m = gl.boosted_trees_classifier.create(tr, **params)
 print evaluate_logloss(m, tr, va)
 
 # Make final submission by using full training set
-# m = gl.boosted_trees_classifier.create(train, **params)
-# make_submission(m, test, os.path.join(data_path, 'xbt_mi250_md_10_mcw_4_rs_0.9_mlr1_cs0.8.csv'))
+m = gl.boosted_trees_classifier.create(train, **params)
+make_submission(m, test, os.path.join(data_path, 'xbt_mi300_md_8_mcw_4_rs_0.9_mlr2_cs0.9.csv'))
+# make_submission(m, test, os.path.join(data_path, 'xbt_mi500mcw_4.csv'))
 # make_submission(m, test, os.path.join(data_path, 'xbt_default.csv'))

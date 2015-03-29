@@ -63,8 +63,8 @@ def predicting(testing, n):
 
 
 print "Predicting"
-# prediction = fit.predict_proba(testing.values)
-prediction = predicting(testing_log_scale, 10)
+prediction = fit.predict_proba(testing.values)
+# prediction = predicting(testing_log_scale, 10)
 
 
 temp = pd.DataFrame(prediction)
