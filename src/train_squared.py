@@ -10,7 +10,7 @@ data_path = os.path.join("..", "data")
 
 training = pd.read_csv(os.path.join(data_path, "train.csv"))
 
-train = training.drop("id", axis=1)
+train = training.drop(["target", "id"], axis=1)
 
 def add_squared(df):
     N = len(df.columns)
