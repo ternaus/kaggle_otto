@@ -8,8 +8,12 @@ import os
 random.seed(666)
 data_path = os.path.join("..", "data")
 
-train = gl.SFrame.read_csv(os.path.join(data_path, "train.csv"))
-test = gl.SFrame.read_csv(os.path.join(data_path, "test.csv"))
+# train = gl.SFrame.read_csv(os.path.join(data_path, "train.csv"))
+# test = gl.SFrame.read_csv(os.path.join(data_path, "test.csv"))
+
+train = gl.SFrame.read_csv(os.path.join(data_path, "train_squared.csv"))
+test = gl.SFrame.read_csv(os.path.join(data_path, "test_squared.csv"))
+
 
 del train['id']
 
@@ -42,19 +46,21 @@ def evaluate_logloss(model, train, valid):
     return {'train_logloss': multiclass_logloss(model, train),
             'valid_logloss': multiclass_logloss(model, valid)}
 
-params = {'target': 'target',
-          'max_iterations': 300,
-          'max_depth': 8,
-          'min_child_weight': 4,
-          'row_subsample': 0.9,
-          'min_loss_reduction': 2,
-          'column_subsample': 0.9,
-          'validation_set': None}
-
 # params = {'target': 'target',
-#           'validation_set': None,
-#           'max_iterations': 250,
-#           'min_loss_redution': 1}
+#           'max_iterations': 300,
+#           'max_depth': 8,
+#           'min_child_weight': 4,
+#           'row_subsample': 0.9,
+#           'min_loss_reduction': 2,
+#           'column_subsample': 0.9,
+#           'validation_set': None}
+
+params = {'target': 'target',
+          'validation_set': None,
+          'max_iterations': 300
+          }
+          # 'max_iterations': 250,
+          # 'min_loss_reduction': 1}
 
 
 train = shuffle(train)
@@ -66,6 +72,7 @@ print evaluate_logloss(m, tr, va)
 
 # Make final submission by using full training set
 m = gl.boosted_trees_classifier.create(train, **params)
-make_submission(m, test, os.path.join(data_path, 'xbt_mi300_md_8_mcw_4_rs_0.9_mlr2_cs0.9.csv'))
+# make_submission(m, test, os.path.join(data_path, 'xbt_mi300_md_8_mcw_4_rs_0.9_mlr2_cs0.9.csv'))
+# make_submission(m, test, os.path.join(data_path, 'xbt_sq_mi300_md_8_mcw_4_rs_0.9_mlr2_cs0.9.csv'))
 # make_submission(m, test, os.path.join(data_path, 'xbt_mi500mcw_4.csv'))
-# make_submission(m, test, os.path.join(data_path, 'xbt_default.csv'))
+make_submission(m, test, os.path.join(data_path, 'xbt_sq_300_default.csv'))
