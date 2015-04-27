@@ -24,7 +24,6 @@ target = train["target"].values
 training = train.drop(["id", 'target'], 1).values
 testing = test.drop("id", 1)
 
-clf = RandomForestClassifier()
 
 from operator import itemgetter
 # Utility function to report best scores
@@ -41,16 +40,19 @@ def report(grid_scores, n_top=5):
 
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
-clf = RandomForestClassifier()
+
+clf = XGBClassifier()
 from scipy.stats import randint as sp_randint
 
-param_dist = {"n_estimators": [10, 20, 100],
-              "max_depth": [3, 4, 10, None],
-              "max_features": sp_randint(1, 11),
-              "min_samples_split": sp_randint(1, 11),
-              "min_samples_leaf": sp_randint(1, 11),
-              "bootstrap": [False, True]}
+# print help(clf)
+param_dist = {"n_estimators": [100, 200],
+              "max_depth": [None, 8, 10, 12, 20],
+              'learning_rate': [0.1],
+              # "max_features": sp_randint(1, 11),
+              # "min_samples_split": sp_randint(1, 11),
+              # "min_samples_leaf": sp_randint(1, 11),
+              }
 
-random_search = RandomizedSearchCV(clf, param_dist, n_jobs=-1, random_state=42, cv=5, scoring='log_loss')
+random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=5, scoring='log_loss', verbose=2)
 fit = random_search.fit(training, target)
 report(fit.grid_scores_)
