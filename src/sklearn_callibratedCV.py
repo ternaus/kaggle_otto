@@ -28,7 +28,7 @@ random_state = 42
 
 n_folds = 10
 
-
+calibration_method = 'sigmoid'
 
 # model = 'rf' #RandomForest
 model = 'gb' #GradientBoosting
@@ -37,17 +37,17 @@ if model == 'rf':
     params = {'n_estimators': 100,
               'n_jobs': -1,
               'random_state': random_state}
-    method = 'rf_{n_estimators}_nfolds_{n_folds}'.format(n_folds=n_folds, n_estimators=params['n_estimators'])
+    method = 'rf_{n_estimators}_nfolds_{n_folds}_calibration_{calibration_method}'.format(n_folds=n_folds, n_estimators=params['n_estimators'], calibration_method=calibration_method)
     clf = RandomForestClassifier(**params)
 elif model == 'gb':
     params = {'n_estimators': 1000,
               'random_state': random_state}
-    method = 'gb_{n_estimators}_nfolds_{n_folds}'.format(n_folds=n_folds, n_estimators=params['n_estimators'])
+    method = 'gb_{n_estimators}_nfolds_{n_folds}_calibration_{calibration_method}'.format(n_folds=n_folds, n_estimators=params['n_estimators'], calibration_method=calibration_method)
     clf = GradientBoostingClassifier(**params)
 
 skf = cross_validation.StratifiedKFold(target, n_folds=n_folds, random_state=random_state)
 
-ccv = CalibratedClassifierCV(base_estimator=clf, method='sigmoid', cv=skf)
+ccv = CalibratedClassifierCV(base_estimator=clf, method=calibration_method, cv=skf)
 
 print 'fit the data'
 
