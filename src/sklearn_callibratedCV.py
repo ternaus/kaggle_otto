@@ -5,13 +5,16 @@ from sklearn import cross_validation
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import log_loss
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
+
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 import os
 import cPickle as pickle
 import gzip
 import xgboost
-
+import gl_wrapper
 print 'reading train'
 train = pd.read_csv('../data/train.csv')
 
@@ -31,7 +34,9 @@ calibration_method = 'isotonic'
 
 # model = 'rf' #RandomForest
 # model = 'gb' #GradientBoosting
-model = 'xgb' #eXtremeGradient Boosting
+# model = 'xgb' #eXtremeGradient Boosting
+#model = 'xgbt'
+model = 'svm'
 
 if model == 'rf':
     params = {'n_estimators': 100,
@@ -53,6 +58,25 @@ elif model == 'xgb':
                                                                                                   n_estimators=params['n_estimators'],
                                                                                                   calibration_method=calibration_method)
     clf = xgboost.XGBClassifier(**params)
+elif model == 'xgbt':
+    params = {'max_iterations': 300, 'max_depth': 8, 'min_child_weight': 4, 'row_subsample': 0.9, 'min_loss_reduction': 1, 'column_subsample': 0.8}
+    method = 'xgbt_{max_iterations}_max_depth{max_depth}_min_loss_reduction{min_loss_reduction}_min_child_weight{min_child_weight}_row_subsample{row_subsample}_column_subsample{column_subsample}_nfolds_{n_folds}_calibration_{calibration_method}'.format(max_depth=params['max_depth'],
+                                                                                                  max_iterations=params['max_iterations'],
+                                                                                                  min_loss_reduction=params['min_loss_reduction'],
+                                                                                                  min_child_weight=params['min_child_weight'],
+                                                                                                  row_subsample=params['row_subsample'],
+                                                                                                  column_subsample=params['column_subsample'],
+                                                                                                  calibration_method=calibration_method,
+                                                                                                  n_folds=n_folds)
+    clf = gl_wrapper.BoostedTreesClassifier(**params)
+
+elif model == 'svm':
+    params = {'C': 1}
+    method = 'svm_{C}_nfolds_{n_folds}_calibration_{calibration_method}'.format(n_folds=n_folds,
+                                                                                C=params['C'],
+                                                                                calibration_method=calibration_method)
+    clf = OneVsRestClassifier(SVC(**params), n_jobs=-1)
+
 
 skf = cross_validation.StratifiedKFold(target, n_folds=n_folds, random_state=random_state)
 

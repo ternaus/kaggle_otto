@@ -136,7 +136,7 @@ prediction = ccv.predict_proba(test)
 print 'saving prediction to file'
 submission = pd.DataFrame(prediction)
 submission.columns = ["Class_" + str(i) for i in range(1, 10)]
-submission["id"] = test["id"]
+submission["id"] = ids
 
 try:
     os.mkdir('predictions')
