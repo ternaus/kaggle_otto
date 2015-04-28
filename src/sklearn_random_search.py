@@ -5,6 +5,8 @@ __author__ = 'Vladimir Iglovikov'
 This script will do randomized search to find the best or almost the best parameters for this problem
 for sklearn package
 '''
+from sklearn.svm import SVC
+from sklearn.multiclass import OneVsRestClassifier
 
 import xgboost as xgb
 import pandas as pd
@@ -41,18 +43,20 @@ def report(grid_scores, n_top=5):
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
-clf = XGBClassifier()
+# clf = XGBClassifier()
 from scipy.stats import randint as sp_randint
 
 # print help(clf)
-param_dist = {"n_estimators": [100, 200],
-              "max_depth": [None, 8, 10, 12, 20],
-              'learning_rate': [0.1],
-              # "max_features": sp_randint(1, 11),
-              # "min_samples_split": sp_randint(1, 11),
-              # "min_samples_leaf": sp_randint(1, 11),
-              }
+# param_dist = {"n_estimators": [100, 200],
+#               "max_depth": [None, 8, 10, 12, 20],
+#               'learning_rate': [0.1],
+#               # "max_features": sp_randint(1, 11),
+#               # "min_samples_split": sp_randint(1, 11),
+#               # "min_samples_leaf": sp_randint(1, 11),
+#               }
 
+param_dist = {'C': range(1, 11)}
+clf = SVC(probability=True)
 random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=5, scoring='log_loss', verbose=2)
 fit = random_search.fit(training, target)
 report(fit.grid_scores_)

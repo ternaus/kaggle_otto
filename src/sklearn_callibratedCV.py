@@ -86,6 +86,8 @@ print 'fit the data'
 
 fit = ccv.fit(training, target)
 
+a = fit.predict_proba(training)
+
 print 'predict on training set'
 score = log_loss(target, fit.predict_proba(training))
 print score
@@ -112,9 +114,7 @@ try:
 except:
     pass
 
-
 submission.to_csv(os.path.join('predictions', method + '.cvs'), index=False)
-
 
 save_model = False
 
