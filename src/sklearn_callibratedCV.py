@@ -10,6 +10,7 @@ from sklearn.calibration import CalibratedClassifierCV
 import os
 import cPickle as pickle
 import gzip
+import xgboost
 
 print 'reading train'
 train = pd.read_csv('../data/train.csv')
@@ -26,10 +27,11 @@ random_state = 42
 
 n_folds = 10
 
-calibration_method = 'sigmoid'
+calibration_method = 'isotonic'
 
 # model = 'rf' #RandomForest
-model = 'gb' #GradientBoosting
+# model = 'gb' #GradientBoosting
+model = 'xgb' #eXtremeGradient Boosting
 
 if model == 'rf':
     params = {'n_estimators': 100,
@@ -42,6 +44,15 @@ elif model == 'gb':
               'random_state': random_state}
     method = 'gb_{n_estimators}_nfolds_{n_folds}_calibration_{calibration_method}'.format(n_folds=n_folds, n_estimators=params['n_estimators'], calibration_method=calibration_method)
     clf = GradientBoostingClassifier(**params)
+elif model == 'xgb':
+    params = {'max_depth': 10,
+                    'n_estimators': 100}
+
+    method = 'xgb_{n_estimators}_md{md}_nfolds_{n_folds}_calibration_{calibration_method}'.format(md=params['max_depth'],
+                                                                                                  n_folds=n_folds,
+                                                                                                  n_estimators=params['n_estimators'],
+                                                                                                  calibration_method=calibration_method)
+    clf = xgboost.XGBClassifier(**params)
 
 skf = cross_validation.StratifiedKFold(target, n_folds=n_folds, random_state=random_state)
 
