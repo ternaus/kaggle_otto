@@ -7,6 +7,8 @@ from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import log_loss
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
 
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
@@ -15,16 +17,30 @@ import cPickle as pickle
 import gzip
 import xgboost
 import gl_wrapper
+import numpy as np
+
+def load_train_data(path):
+    df = pd.read_csv(path)
+    X = df.values.copy()
+    np.random.shuffle(X)
+    X, labels = X[:, 1:-1].astype(np.float32), X[:, -1]
+    encoder = LabelEncoder()
+    y = encoder.fit_transform(labels).astype(np.int32)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    return X, y, encoder, scaler
+
+def load_test_data(path, scaler):
+    df = pd.read_csv(path)
+    X = df.values.copy()
+    X, ids = X[:, 1:].astype(np.float32), X[:, 0].astype(str)
+    X = scaler.transform(X)
+    return X, ids
+
 print 'reading train'
-train = pd.read_csv('../data/train.csv')
-
+X, target, encoder, scaler = load_train_data('../data/train.csv')
 print 'reading test'
-test = pd.read_csv('../data/test.csv')
-
-target = train["target"].values
-training = train.drop(["id", 'target'], 1).values
-testing = test.drop("id", 1)
-
+test, ids = load_test_data('../data/test.csv', scaler)
 
 random_state = 42
 
@@ -71,7 +87,7 @@ elif model == 'xgbt':
     clf = gl_wrapper.BoostedTreesClassifier(**params)
 
 elif model == 'svm':
-    params = {'C': 1}
+    params = {'C': 5, 'cache_size': 2048}
     method = 'svm_{C}_nfolds_{n_folds}_calibration_{calibration_method}'.format(n_folds=n_folds,
                                                                                 C=params['C'],
                                                                                 calibration_method=calibration_method)
@@ -84,12 +100,10 @@ ccv = CalibratedClassifierCV(base_estimator=clf, method=calibration_method, cv=s
 
 print 'fit the data'
 
-fit = ccv.fit(training, target)
-
-a = fit.predict_proba(training)
+fit = ccv.fit(X, target)
 
 print 'predict on training set'
-score = log_loss(target, fit.predict_proba(training))
+score = log_loss(target, fit.predict_proba(X))
 print score
 
 try:
@@ -103,11 +117,11 @@ print >> fName, 'log_loss score on the training set is: ' + str(score)
 fName.close()
 
 print 'predict on testing'
-prediction = ccv.predict_proba(testing.values)
+prediction = ccv.predict_proba(test)
 print 'saving prediction to file'
 submission = pd.DataFrame(prediction)
 submission.columns = ["Class_" + str(i) for i in range(1, 10)]
-submission["id"] = test["id"]
+submission["id"] = ids
 
 try:
     os.mkdir('predictions')

@@ -16,7 +16,7 @@ from sklearn import cross_validation
 from sklearn.metrics import log_loss
 from sklearn.cross_validation import StratifiedKFold
 import math
-from sklearn.grid_search import RandomizedSearchCV
+from sklearn.grid_search import RandomizedSearchCV, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.preprocessing import LabelEncoder
@@ -55,8 +55,6 @@ def load_test_data(path, scaler):
 X, target, encoder, scaler = load_train_data('../data/train.csv')
 test, ids = load_test_data('../data/test.csv', scaler)
 
-
-
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
@@ -72,8 +70,9 @@ from scipy.stats import randint as sp_randint
 #               # "min_samples_leaf": sp_randint(1, 11),
 #               }
 
-param_dist = {'C': range(1, 8), 'gamma': [0, 0.3, 0.5, 0.9]}
-clf = SVC()
-random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=2, scoring='log_loss', verbose=3, n_jobs=3)
+param_dist = {'C': [0.1, 0.5, 1, 2, 3, 4, 5, 6, 8, 10], 'cache_size': [2048]}
+clf = SVC(probability=True)
+# searhc = GridSearchCV(clf, param_dist, random_state=42, cv=2, scoring='log_loss', verbose=3, n_jobs=-1)
+random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=5, scoring='log_loss', verbose=3, n_jobs=-1)
 fit = random_search.fit(X, target)
 report(fit.grid_scores_)
