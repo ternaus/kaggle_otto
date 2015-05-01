@@ -33,7 +33,7 @@ n_folds = 10
 calibration_method = 'isotonic'
 
 # model = 'rf' #RandomForest
-# model = 'gb' #GradientBoosting
+#model = 'gb' #GradientBoosting
 # model = 'xgb' #eXtremeGradient Boosting
 #model = 'xgbt'
 model = 'svm'

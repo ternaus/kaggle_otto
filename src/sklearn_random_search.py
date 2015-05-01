@@ -19,13 +19,8 @@ import math
 from sklearn.grid_search import RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
-train = pd.read_csv('../data/train.csv')
-test = pd.read_csv('../data/test.csv')
-
-target = train["target"].values
-training = train.drop(["id", 'target'], 1).values
-testing = test.drop("id", 1)
-
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
 
 from operator import itemgetter
 # Utility function to report best scores
@@ -38,6 +33,28 @@ def report(grid_scores, n_top=5):
               np.std(score.cv_validation_scores)))
         print("Parameters: {0}".format(score.parameters))
         print("")
+
+def load_train_data(path):
+    df = pd.read_csv(path)
+    X = df.values.copy()
+    np.random.shuffle(X)
+    X, labels = X[:, 1:-1].astype(np.float32), X[:, -1]
+    encoder = LabelEncoder()
+    y = encoder.fit_transform(labels).astype(np.int32)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    return X, y, encoder, scaler
+
+def load_test_data(path, scaler):
+    df = pd.read_csv(path)
+    X = df.values.copy()
+    X, ids = X[:, 1:].astype(np.float32), X[:, 0].astype(str)
+    X = scaler.transform(X)
+    return X, ids
+
+X, target, encoder, scaler = load_train_data('../data/train.csv')
+test, ids = load_test_data('../data/test.csv', scaler)
+
 
 
 from sklearn.grid_search import RandomizedSearchCV
@@ -55,8 +72,8 @@ from scipy.stats import randint as sp_randint
 #               # "min_samples_leaf": sp_randint(1, 11),
 #               }
 
-param_dist = {'C': range(1, 11)}
-clf = SVC(probability=True)
-random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=5, scoring='log_loss', verbose=2)
-fit = random_search.fit(training, target)
+param_dist = {'C': range(1, 8), 'gamma': [0, 0.3, 0.5, 0.9]}
+clf = SVC()
+random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=2, scoring='log_loss', verbose=3, n_jobs=3)
+fit = random_search.fit(X, target)
 report(fit.grid_scores_)

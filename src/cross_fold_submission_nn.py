@@ -25,6 +25,8 @@ import theano
 import cPickle as pickle
 import gzip
 
+import gl_wrapper
+
 def float32(k):
     return np.cast['float32'](k)
 
@@ -145,7 +147,7 @@ except:
 
 submission.to_csv(os.path.join('predictions', method + '.cvs'), index=False)
 
-save_model = False
+save_model = True
 
 if save_model == True:
     print 'save model to file'
