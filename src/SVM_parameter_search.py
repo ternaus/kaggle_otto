@@ -14,7 +14,7 @@ import numpy as np
 from xgboost import XGBClassifier
 from sklearn import cross_validation
 from sklearn.metrics import log_loss
-from sklearn.cross_validation import StratifiedKFold
+from sklearn.cross_validation import StratifiedKFold, StratifiedShuffleSplit
 import math
 from sklearn.grid_search import RandomizedSearchCV, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler
 
 from operator import itemgetter
 # Utility function to report best scores
-def report(grid_scores, n_top=5):
+def report(grid_scores, n_top=10):
     top_scores = sorted(grid_scores, key=itemgetter(1), reverse=True)[:n_top]
     for i, score in enumerate(top_scores):
         print("Model with rank: {0}".format(i + 1))
@@ -70,9 +70,31 @@ from scipy.stats import randint as sp_randint
 #               # "min_samples_leaf": sp_randint(1, 11),
 #               }
 
-param_dist = {'C': [12, 14, 100], 'cache_size': [2048]}
-clf = SVC(probability=True)
+
+random_state = 42
+n_folds = 2
+
+C_range = np.logspace(-2, 10, 13)
+gamma_range = np.logspace(-9, 3, 13)
+param_dist = dict(gamma=gamma_range, C=C_range)
+
+clf = SVC(probability=True, cache_size=2048)
 # searhc = GridSearchCV(clf, param_dist, random_state=42, cv=2, scoring='log_loss', verbose=3, n_jobs=-1)
-random_search = RandomizedSearchCV(clf, param_dist, random_state=42, cv=2, scoring='log_loss', verbose=3, n_jobs=2, n_iter=3)
+skf = cross_validation.StratifiedKFold(target,
+                                       n_folds=n_folds,
+                                       random_state=random_state)
+# cv = StratifiedShuffleSplit(target, n_iter=5, test_size=0.5, random_state=42)
+random_search = RandomizedSearchCV(clf,
+                                   param_dist,
+                                   random_state=random_state,
+                                   cv=skf,
+                                   scoring='log_loss',
+                                   verbose=3,
+                                   n_jobs=1,
+                                   n_iter=100)
+
+# cv = StratifiedShuffleSplit(target, n_iter=5, test_size=0.3, random_state=42)
+# grid = GridSearchCV(SVC(), param_grid=param_dist, cv=cv, n_jobs=1, verbose=3)
+#
 fit = random_search.fit(X, target)
 report(fit.grid_scores_)

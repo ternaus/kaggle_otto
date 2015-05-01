@@ -81,9 +81,9 @@ layers0 = [('input', InputLayer),
            ('dense1', DenseLayer),
            ('output', DenseLayer)]
 
-clf1 = RandomForestClassifier(n_estimators=500, n_jobs=-1)
-clf2 = GradientBoostingClassifier(n_estimators=100)
-clf3 = OneVsRestClassifier(SVC(C=5), n_jobs=-1)
+clf1 = RandomForestClassifier(n_estimators=800, n_jobs=-1)
+clf2 = GradientBoostingClassifier(n_estimators=1000)
+clf3 = OneVsRestClassifier(SVC(C=5, cache_size=2048), n_jobs=-1)
 clf4 = NeuralNet(layers=layers0,
 
                  input_shape=(None, num_features),
