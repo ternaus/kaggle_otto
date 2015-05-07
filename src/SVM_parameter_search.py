@@ -89,7 +89,7 @@ random_search = RandomizedSearchCV(clf,
                                    random_state=random_state,
                                    cv=skf,
                                    scoring='log_loss',
-                                   verbose=3,
+                                   verbose=2,
                                    n_jobs=1,
                                    n_iter=100)
 
