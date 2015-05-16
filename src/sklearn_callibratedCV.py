@@ -18,12 +18,16 @@ import gzip
 import xgboost
 import gl_wrapper
 import numpy as np
+import math
 
 def load_train_data(path):
     df = pd.read_csv(path)
     X = df.values.copy()
     np.random.shuffle(X)
     X, labels = X[:, 1:-1].astype(np.float32), X[:, -1]
+
+    f = np.vectorize(lambda x: math.sqrt(x + 3.0 / 8.0))
+    X = f(X)
     encoder = LabelEncoder()
     y = encoder.fit_transform(labels).astype(np.int32)
     scaler = StandardScaler()
@@ -34,6 +38,8 @@ def load_test_data(path, scaler):
     df = pd.read_csv(path)
     X = df.values.copy()
     X, ids = X[:, 1:].astype(np.float32), X[:, 0].astype(str)
+    f = np.vectorize(lambda x: math.sqrt(x + 3.0 / 8.0))
+    X = f(X)
     X = scaler.transform(X)
     return X, ids
 
